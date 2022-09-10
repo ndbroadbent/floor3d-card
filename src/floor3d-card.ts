@@ -612,7 +612,15 @@ export class Floor3dCard extends LitElement {
           object.material = this._selectedmaterial;
         }
         this._selectedobjects = this._selectedobjects.sort();
-        console.log('Selected object IDs:', this._selectedobjects);
+
+        // Need SSL to write to clipboard
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(JSON.stringify(this._selectedobjects));
+          console.log('Selected object IDs copied to clipboard:', this._selectedobjects);
+        } else {
+          console.log('Selected object IDs:', this._selectedobjects);
+        }
+
         this._render();
         render(this._getSelectionBar(), this._selectionbar);
         return;
