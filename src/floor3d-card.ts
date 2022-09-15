@@ -76,6 +76,7 @@ export class Floor3dCard extends LitElement {
   private _initialobjectmaterials: { [key:string]: THREE.Material }
   private _selectedobjects: string[];
   private _selectionModeEnabled: boolean;
+  private _selectionMode: boolean;
   private _brightness?: number[];
   private _lights?: string[];
   private _rooms?: string[];
@@ -156,7 +157,7 @@ export class Floor3dCard extends LitElement {
 
       // Handle mouse click events that are less than 200ms in duration
       if (this._clickStart && Date.now() - this._clickStart < 200) {
-        if (this._config.click == 'yes' || this._selectionModeEnabled) {
+        if (this._config.click == 'yes' || this._selectionMode) {
           this._firEvent(evt);
         }
       }
@@ -403,7 +404,9 @@ export class Floor3dCard extends LitElement {
     this._clonedmaterial = [];
     let i = 0;
 
-    this._selectionModeEnabled = this._config.selectionMode === 'yes'
+    this._selectionModeEnabled = (this._config.selectionMode === 'yes' ||
+      this._config.selectionMode === 'disabled')
+    this._selectionMode = this._config.selectionMode === 'yes'
 
     this._object_ids.forEach((entity) => {
       this._initialmaterial.push([]);
@@ -564,7 +567,7 @@ export class Floor3dCard extends LitElement {
     //double click on object to show the name
     const intersects = this._getintersect(e);
     if (intersects.length > 0 && intersects[0].object.name != '') {
-      if (this._selectionModeEnabled) {
+      if (this._selectionMode) {
         this._defaultaction(intersects);
         return;
       }
@@ -651,7 +654,7 @@ export class Floor3dCard extends LitElement {
       }
       console.log('Object:', objectName);
 
-      if (this._selectionModeEnabled) {
+      if (this._selectionMode) {
         // Color objects blue when we click them, so we can build a list of
         // rooms and walls to control a light
         const object: any = intersects[0].object
@@ -1775,7 +1778,7 @@ export class Floor3dCard extends LitElement {
   }
 
   private _getSelectionBar(): TemplateResult {
-    if (this._config.selectionMode == 'yes') {
+    if (this._selectionModeEnabled) {
       const buttonArray: TemplateResult[] = [];
       buttonArray.push(html`
         <div class="row" style="background-color:black;">
@@ -1795,7 +1798,7 @@ export class Floor3dCard extends LitElement {
           <font color="white">
           <floor3d-button
             style="opacity: 100%;"
-            label="${this._selectionModeEnabled ? 'Disable Selection' : 'Enable Selection'}"
+            label="${this._selectionMode ? 'Disable Selection' : 'Enable Selection'}"
             @click=${this._handleToggleSelectionMode.bind(this)}
           >
           </floor3d-button>
@@ -1829,8 +1832,8 @@ export class Floor3dCard extends LitElement {
 
   private _handleToggleSelectionMode(ev): void {
     ev.stopPropagation();
-    this._selectionModeEnabled = !this._selectionModeEnabled;
-    this._setSelectionMaterials(this._selectionModeEnabled);
+    this._selectionMode = !this._selectionMode;
+    this._setSelectionMaterials(this._selectionMode);
     render(this._getSelectionBar(), this._selectionbar);
   }
 
